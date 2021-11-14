@@ -1,6 +1,8 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+import '../admob_manger.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -10,6 +12,70 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late BannerAd _bottomBannerAd;
+  bool _isBottomBannerAdLoaded = false;
+  final _inlineAdIndex = 3;
+
+  late BannerAd _inlineBannerAd;
+  bool _isInlineBannerAdLoaded = false;
+
+
+
+  void _createBottomBannerAd() {
+    _bottomBannerAd = BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      size: AdSize.banner,
+      request: AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBottomBannerAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      ),
+    );
+    _bottomBannerAd.load();
+  }
+
+  void _createInlineBannerAd() {
+    _inlineBannerAd = BannerAd(
+      size: AdSize.mediumRectangle,
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isInlineBannerAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      ),
+    );
+    _inlineBannerAd.load();
+  }
+  @override
+  void initState() {
+    super.initState();
+    _createBottomBannerAd();
+    _createInlineBannerAd();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _bottomBannerAd.dispose();
+    _inlineBannerAd.dispose();
+  }
+
+
+
+
+
   Random random = Random();
 
   List aya = [
@@ -21,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'وَاتَّقُوا اللَّهَ لَعَلَّكُمْ تُفْلِحُونَ',
     'وَاذْكُرُوا اللَّهَ فِي أَيَّامٍ مَعْدُودَاتٍ',
   ];
-  int index = 0 ;
+  int index = 0;
 
   void changeIndex() {
     setState(() {
@@ -34,6 +100,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Scaffold(
+        bottomNavigationBar: _isBottomBannerAdLoaded
+            ? Container(
+          height: _bottomBannerAd.size.height.toDouble(),
+          width: _bottomBannerAd.size.width.toDouble(),
+          child: AdWidget(ad: _bottomBannerAd),
+        )
+            : null,
         drawer: Drawer(
           child: ListView(
             // Important: Remove any padding from the ListView.
@@ -92,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: const [
               Text(
-                'الرئسية',
+                'الرئيسية',
                 style: TextStyle(color: Color(0xffC0936C), fontSize: 25),
               ),
             ],
@@ -159,6 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: const Color(0xffDFB281),
                   ),
                 ),
+
               ],
             ),
           ),
